@@ -1,0 +1,111 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Task Manager</h1>
+
+        <!-- Form to add new task -->
+        <form id="taskForm" class="mb-4">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <input type="date" class="form-control" id="dueDate" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Task</button>
+        </form>
+
+        <!-- Display tasks -->
+        <ul id="taskList" class="list-group"></ul>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Fetch tasks from backend
+        function fetchTasks() {
+            fetch('http://localhost:3000/tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    const taskList = document.getElementById('taskList');
+                    taskList.innerHTML = '';
+                    tasks.forEach(task => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerHTML = `
+                            <h5>${task.title}</h5>
+                            <p>${task.description}</p>
+                            <small>Due Date: ${task.dueDate}</small>
+                            <div>
+                                <button type="button" class="btn btn-info btn-sm mr-2" onclick="editTask(${task.id})">Edit</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Delete</button>
+                            </div>
+                        `;
+                        taskList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching tasks:', error));
+        }
+
+        // Add new task
+        document.getElementById('taskForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                dueDate: document.getElementById('dueDate').value
+            };
+            fetch('http://localhost:3000/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(() => {
+                fetchTasks();
+                document.getElementById('taskForm').reset();
+            })
+            .catch(error => console.error('Error adding task:', error));
+        });
+
+        // Delete task
+        function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                fetch(`http://localhost:3000/tasks/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(() => fetchTasks())
+                .catch(error => console.error('Error deleting task:', error));
+            }
+        }
+
+        // Initial fetch
+        fetchTasks();
+    </script>
+</body>
+</html>
