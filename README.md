@@ -10,6 +10,8 @@ node index.js
 
 Step 3: Run the index.html file or click Go live if you are using vs code
 
+Deployed link- https://morbiusss.github.io/TaskManager/
+
 
 
 
